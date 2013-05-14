@@ -58,10 +58,19 @@ sub getDiff ($$$$$$) {
         $end_commit = "HEAD";
     }
 
-    # Default start_commit to parent of end_commit
-    # Note: if end_commit is a merge, this is the first parent
+    # Default start_commit to the merge-base of HEAD and end_commit
     if ($start_commit eq "") {
-        $start_commit = $end_commit . "^"
+        my @args = ();
+        push @args, "--git-dir=$self->{gitdir}";
+        push @args, 'merge-base';
+        push @args, 'HEAD';
+        push @args, $end_commit;
+        my $read_data = '';
+        my $read_stdout_fh = new FileHandle;
+        open($read_stdout_fh, '>', \$read_data);
+        Codestriker::execute_command($read_stdout_fh, undef,
+            $Codestriker::git, @args);
+        $start_commit = $1 if ($read_data =~ /^([0-9a-f]{40})$/);
     }
 
     my @args = ();
