@@ -21,7 +21,7 @@ sub new_local ($$$) {
 
     my $self = Codestriker::Repository->new(":git:${path}");
 
-    $self->{gitdir} = $path . "/.git";
+    $self->{gitdir} = -d "$path/.git" ? "$path/.git" : $path;
 
     bless $self, $type;
 }
