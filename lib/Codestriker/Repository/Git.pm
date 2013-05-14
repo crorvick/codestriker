@@ -73,6 +73,25 @@ sub getDiff ($$$$$$) {
         $start_commit = $1 if ($read_data =~ /^([0-9a-f]{40})$/);
     }
 
+    sub get_prefix {
+        my ($ref) = @_;
+        my @args = ();
+        push @args, "--git-dir=$self->{gitdir}";
+        push @args, 'rev-parse';
+        push @args, '--verify';
+        push @args, '--short';
+        push @args, $ref;
+        my $read_data = '';
+        my $read_stdout_fh = new FileHandle;
+        open($read_stdout_fh, '>', \$read_data);
+        Codestriker::execute_command($read_stdout_fh, undef,
+            $Codestriker::git, @args);
+        return $read_data =~ /^([0-9a-f]{7})$/ ? $1 : $ref;
+    };
+
+    my $start_prefix = get_prefix($start_commit);
+    my $end_prefix = get_prefix($end_commit);
+
     my @args = ();
     push @args, '--git-dir=' . "$self->{gitdir}";
     push @args, 'diff';
@@ -80,9 +99,9 @@ sub getDiff ($$$$$$) {
     push @args, '-U6';
     # Header will use full SHA1 in 'index <blob>..<blob>' line
     push @args, '--full-index';
-    # Header will say diff --git $start_commit/<file> $end_commit/<file>
-    push @args, "--src-prefix=" . $start_commit . "/";
-    push @args, "--dst-prefix=" . $end_commit . "/";
+    # Header will say diff --git $start_prefix/<file> $end_prefix/<file>
+    push @args, "--src-prefix=$start_prefix/";
+    push @args, "--dst-prefix=$end_prefix/";
     push @args, "$start_commit";
     push @args, "$end_commit";
     push @args, '--';
