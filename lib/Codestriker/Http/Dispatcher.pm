@@ -117,7 +117,7 @@ sub dispatch {
     # Set to a default method if none were found.
     if (! defined $found_method) {
         $found_method = $Codestriker::allow_searchlist ?
-          $self->{list_topics_method} : $self->{create_topics_method};
+          $self->{list_topics_method} : $self->{create_topic_method};
     }
 
     # Check if the method requires authentication.
